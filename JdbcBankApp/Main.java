@@ -3,76 +3,27 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args)  {
         System.out.println("Do you want to create Account ?");
-        Scanner sc = new Scanner(System.in);
+        Scanner sc =InputTaker.getScanner();
         String ans = sc.nextLine();
         if(ans.equalsIgnoreCase("yes")){
-            //field  :  who is the provider ?
-
-            // firstName  : --> user
-            System.out.println("Enter the First Name");
-            String firstName = sc.nextLine();
-
-            //lastName : --> user
-            System.out.println("Enter the Last Name");
-            String lastName = sc.nextLine();
-            //mobile : --> user
-            System.out.println("Enter the Mobile Number");
-            String mob = sc.nextLine();
-
-            //accountNumber :  <-- bank
-
-            //email Id; : --> user
-            System.out.println("Enter the Email Id");
-            String email = sc.nextLine();
-
-            //amount  :--> user
-            System.out.println("Enter the Initial Deposit amount");
-            int amount = sc.nextInt();
-
-            if(firstName.length()==0){
-                throw new UserExceptionHandling("User First Name cannot Be empty!");
-            }
-            if(lastName.length()==0){
-                throw new UserExceptionHandling("User Last Name cannot Be empty!");
-            }
-            if(mob.length()==0){
-                throw new UserExceptionHandling("User Mobile Number cannot Be empty!");
-            }
-            if(email.length()==0){
-                throw new UserExceptionHandling("User  Email cannot Be empty!");
-            }else if(!email.contains("@")){
-                throw new UserExceptionHandling("User provided Email is invalid!");
-            }
-            if(amount<0){
-                throw new UserExceptionHandling("Invalid amount , amount must be in whole number");
-            }
-
-            // automatically generating Account number. must be unique for each account
-            Random rnd = new Random();
-            int accountNumber = 100000 + rnd.nextInt(900000);
-//            String str="CREATE TABLE USER(First_name VARCHAR(53) NOT NULL,Last_name VARCHAR(52) NOT NULL,Mobile_no VARCHAR(52) NOT NULL,Account_no int NOT NULL,Email_id VARCHAR(52),Balance int)";
-            try {
-                Connection conn= DBUtils.getConnection();
-                Statement st = conn.createStatement();
-                String str = "insert into user(First_name,Last_name,Mobile_no,Account_no,Email_id,Balance) values('"+firstName+"','"+lastName+"','"+mob+"',"+accountNumber+",'"+email+"',"+amount+")";
-                int x=st.executeUpdate(str);
-                System.out.println("Account is created : "+"User Name: "+firstName+" "+lastName+" , "+" Account Number : "+accountNumber);
-                conn.close();
-            }catch (Exception exc){
-                System.out.println(exc.getMessage());
-            }
+            new CreateAccount().createAccount();
         }
         else{
             System.out.println("Enter Your account Number");
             int account =sc.nextInt();
             System.out.println("Enter 1 to Check Balance");
             System.out.println("Enter 2 to Check account details");
+            System.out.println("Enter 3 to Update user details");
+            System.out.println("Enter 4 to Credit amount");
+            System.out.println("Enter 5 to Debit amount");
             int num = sc.nextInt();
             Connection conn= DBUtils.getConnection();
             if(num==1){
@@ -101,15 +52,96 @@ public class Main {
                     System.out.println(ex.getMessage());
                 }
             }
+            if(num==4){
+                System.out.println("Enter amount :");
+                int addAmount =sc.nextInt();
+                try {
+                    String get = "select balance from user where Account_no ="+account;
+                    Statement st = conn.createStatement();
+                    ResultSet rs=st.executeQuery(get);
+                    int bal=0;
+                    while(rs.next()){
+                        bal=rs.getInt(1);
+                    }
+                    bal +=addAmount;
+                    String set ="UPDATE user set balance="+bal +" where Account_no ="+account;
+                            st.execute(set);
+                    System.out.println("User account balance : "+bal);
+                    System.out.println("Your account has be credited "+addAmount+" On date "+ LocalDateTime.now());
+                    System.out.println("Your updated balance is "+bal);
+                }catch(SQLException sql){
+                    System.out.println(sql.getMessage());
+                }
+            }
+            if(num==5){
+                System.out.println("Enter amount :");
+                int debitAmount =sc.nextInt();
+                try {
+                    String get = "select balance from user where Account_no ="+account;
+                    Statement st = conn.createStatement();
+                    ResultSet rs=st.executeQuery(get);
+                    int bal=0;
+                    while(rs.next()){
+                        bal=rs.getInt(1);
+                    }
+                    if(bal<debitAmount){
+                        System.out.println("We cannot fullfill this request as the debiting amount is more then the account balance.");
+                        return;
+                    }
+                    bal-=debitAmount;
+                    String set ="UPDATE user set balance="+bal +" where Account_no ="+account;
+                        st.execute(set);
+                    System.out.println("User account balance : "+bal);
+                    System.out.println("Your account has be Debited "+debitAmount+" On date "+ LocalDateTime.now());
+                    System.out.println("Your updated balance is "+bal);
 
-            // task you have to implement.
-            // 1. and new cases like  updating details of user ?
-            //2. do transaction :->  enter amount you want to debut --> you have to minus this amount from the total balance but only when the balance is enough to do trasaction
-//                                    you have to print message : --> that user has debut this amount ? and remaining balance is this much.
-            //3. adding amount to the account : --> enter account number and amount you want to add :
-//                                            have to print message that user have credited this much amount and total balance is this much.
+                }catch(SQLException sql){
+                    System.out.println(sql.getMessage());
+                }
+            }
+            if(num==3){
+                sc.nextLine();
+                System.out.println("Enter a if you want to update the Account Email ID");
+                System.out.println("Enter b if you want to update the Account Mobile Number");
+                String updateField = sc.nextLine();
+                if(updateField.equalsIgnoreCase("a")){
+                    System.out.println("Enter Updated Email:");
+                    String email =sc.nextLine();
+                    String set ="UPDATE user set Email_id='"+email +"' where Account_no ="+account;
+                    try {
+                        Statement st = conn.createStatement();
+                        int x = st.executeUpdate(set);
+                        if(x>0){
+                            System.out.println("User Email is updated!!!");
+                        }else{
+                            System.out.println("Unknown Server error!!!");
+                            return;
+                        }
+                        System.out.println("Your account Email is update To "+email+" On date "+ LocalDateTime.now());
+                    }catch(SQLException sql){
+                        System.out.println(sql.getMessage());
+                    }
 
-
+                }
+                if(updateField.equalsIgnoreCase("b")){
+                    System.out.println("Enter Updated Mobile:");
+                    String mobile =sc.nextLine();
+                    String set ="UPDATE user set Mobile_no='"+mobile +"' where Account_no ="+account;
+                    try {
+                        Statement st = conn.createStatement();
+                        int x = st.executeUpdate(set);
+                        if(x>0){
+                            System.out.println("User Mobile Number is updated!!!");
+                        }else{
+                            System.out.println("Unknown Server error!!!");
+                            return;
+                        }
+                        System.out.println("Your account Email is update To "+mobile+" On date "+ LocalDateTime.now());
+                    }catch(SQLException sql){
+                        System.out.println(sql.getMessage());
+                    }
+                }
+            }
 
         }
     }

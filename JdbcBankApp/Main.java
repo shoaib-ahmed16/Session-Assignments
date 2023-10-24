@@ -9,7 +9,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args)  {
+    public static void main(String[] args)throws Exception  {
         System.out.println("Do you want to create Account ?");
         Scanner sc =InputTaker.getScanner();
         String ans = sc.nextLine();
@@ -26,18 +26,15 @@ public class Main {
             System.out.println("Enter 5 to Debit amount");
             int num = sc.nextInt();
             Connection conn= DBUtils.getConnection();
-            if(num==1){
-                String str ="select balance from user where Account_no="+account;
-                try {
-                    Statement st = conn.createStatement();
-                    // Similar to 2D array
-                    ResultSet rs=st.executeQuery(str); //  [2000]
-                    while(rs.next())
-                    System.out.println("User Account Total Balance: "+rs.getInt(1));
-                }catch(SQLException ex){
-                    System.out.println(ex.getMessage());
+            switch (num){
+                case 1: {
+                    new CheckBalance().checkBalance(account);
+                } break;
+                case 2:{
+
                 }
             }
+
             if(num ==2){
                 String str ="select * from user where Account_no="+account;
                 try {

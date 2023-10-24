@@ -13,6 +13,8 @@ public class CreateAccount {
     private int amount;
     private int accountNumber;
 
+    private Connection conn= DBUtils.getConnection();
+
     public void createAccount(){
         //field  :  who is the provider ?
         Scanner sc =InputTaker.getScanner();
@@ -75,7 +77,6 @@ public class CreateAccount {
     }
 
     public void addAccountToDataBase()throws SQLException {
-        Connection conn= DBUtils.getConnection();
         Statement st = conn.createStatement();
         String str = "insert into user(First_name,Last_name,Mobile_no,Account_no,Email_id,Balance) values('"+this.firstName+"','"+this.lastName+"','"+this.mob+"',"+this.accountNumber+",'"+this.email+"',"+this.amount+")";
         int x=st.executeUpdate(str);

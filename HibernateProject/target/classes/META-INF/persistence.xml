@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
+             version="2.2">
+    <persistence-unit name="studentUnit">
+        <class>com.shoaib.Student</class>
+        <properties>
+            <!-- your properties here -->
+            <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/shoaibHibernateDb" />
+            <property name="jakarta.persistence.jdbc.user" value="root" />
+            <property name="jakarta.persistence.jdbc.password" value="root" />
+            <property name="jakarta.persistence.provider" value="org.hibernate.jpa.HibernatePersistenceProvider" />
+            <!-- Other properties here -->
+           <!-- <property name="hibernate.hbm2ddl.auto" value="create" /> -->  <!-- Every time we run the application the tables with or without record  from database will be drop
+            and will create new empty tables in the database -->
+            <property name="hibernate.hbm2ddl.auto" value="update" /> <!-- It will update the existing table of the database-->
+            <property name="hibernate.show_sql" value="true" />
+<!--            <property name="hibernate.format_sql" value="true" />-->
+
+        </properties>
+    </persistence-unit>
+</persistence>
